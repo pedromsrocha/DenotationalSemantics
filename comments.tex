@@ -75,7 +75,7 @@ which is  a contradiction since we may vary $n$ so as to get $\rho(y) = 2 * \rho
 
 The first correspondence between the denotational models of the simply typed $\lambda$-calculus and the operational meaning is established by the soundness Theorem 2.15 [Gun]. We present it here and give it a proof. But before we must prove some auxiliary results. 
 
-\begin{lemma}
+\begin{lemma} \label{lemma:semantic-drop}
 	Suppose $H \vdash M : t$, $x \notin H$ and $d \in \llbracket s \rrbracket$. Then, 
 		\begin{align*}
 			\mathcal{A} \llbracket H, x : s \vartriangleright M: t \rrbracket \rho [ x \mapsto d] = \mathcal{A} \llbracket H \vartriangleright M : t \rrbracket  \rho
@@ -111,11 +111,111 @@ The first correspondence between the denotational models of the simply typed $\l
 	As the extensionality property holds we obtain the desired result. 
 \end{proof}
 
+\begin{lemma}[Substitution] \label{lemma:semantic-substitution}
+	Suppose $H, x : s \vdash M : t$ and $H \vdash N : s$. Then, for every $H$-environment $\rho$, 
+		\begin{align*}
+			\mathcal{A}\llbracket H, x:s \vartriangleright M : t \rrbracket \rho[x \mapsto \mathcal{A} \llbracket H \vartriangleright N : t \rrbracket \rho] = \mathcal{A} \llbracket H \vartriangleright [N / x] M : t \rrbracket \rho 
+		\end{align*}
+\end{lemma}
 
-\begin{lemma}
+\begin{proof}
+	The proof is done by induction on the structure of $M$. For every case, let 
+		\begin{align*}
+			\rho^* =  \rho[x \mapsto \mathcal{A} \llbracket H \vartriangleright N : t \rrbracket \rho]
+		\end{align*} 
+	
+	\begin{itemize}
+		\item If $M = y$ and $y = x$, then 
+			\begin{align*}
+				&\mathcal{A} \llbracket H, x : s \vartriangleright x : s \rrbracket \rho^*\\
+				&= \rho[x \mapsto \mathcal{A} \llbracket H \vartriangleright N : t \rrbracket \rho](x)\\
+				&= \mathcal{A} \llbracket H \vartriangleright N : t \rrbracket \rho \\
+				&= \mathcal{A} \llbracket H \vartriangleright [N / x] M : s \rrbracket \rho 
+			\end{align*}
+			
+			On the other hand, if $y \neq x$, then by applying Lemma \eqref{lemma:semantic-drop} we obtain 
+				\begin{align*}
+					&\mathcal{A}\llbracket H, x : s \vartriangleright y : t \rrbracket \rho^*\\
+					&= \mathcal{A}\llbracket H \vartriangleright y: t \rrbracket \rho \\
+					&= \mathcal{A} \llbracket H \vartriangleright [N / x] y : t \rrbracket \rho 
+				\end{align*}
+		
+		\item Suppose $M = M_1 M_2$, $H, x:s \vdash M_1 : r \to t$ and $H, x :s \vdash M_2 : r$. Then, 
+			\begin{align*}
+				&\mathcal{A}\llbracket H, x: s \vartriangleright M_1 M_2 : t \rrbracket \rho^*\\
+				&= A^{r, t}(\mathcal{A} \llbracket H, x: s \vartriangleright M_1 : r \to t \rrbracket \rho^*, \mathcal{A} \llbracket H, x: s \vartriangleright M_2 : r  \rrbracket \rho^*) \\
+				&= A^{r,t}(\mathcal{A} \llbracket H \vartriangleright [N / x] M_1: r \to t\rrbracket\rho, \mathcal{A} \llbracket H \vartriangleright [N / x] M_2: r \rrbracket\rho) \tag{induction}\\
+				&= \mathcal{A} \llbracket H \vartriangleright ([N / x] M_1)([N / x] M_2): t \rrbracket \rho \\
+				&= \mathcal{A} \llbracket H \vartriangleright [N / x] (M_1 M_2): t \rrbracket \rho 
+			\end{align*}
+			
+		\item If $M = \lambda y: r . \ M_1 : r \to t$ we may assume that $y \neq x$ (if it were not the case, we could choose an $\alpha$-equivalent term such that the inequality would hold). Then, for every $d \in \llbracket r \rrbracket$ we have 
+			\begin{align*}
+				&A^{r,t}(\mathcal{A} \llbracket H, x: s \vartriangleright \lambda y. \ M_1 : r \to t\rrbracket \rho^*, d) \\
+				&= \mathcal{A} \llbracket H, x: s , y : r  \vartriangleright M_1 : t \rrbracket \rho^*[y \mapsto d] \\
+				&= \mathcal{A}\llbracket H, y : r \vartriangleright [N / x] M _1 : t \rho [y \mapsto d] \tag{induction} \\
+				&= A^{r, t}(\mathcal{A}\llbracket H \vartriangleright [N / x] \lambda y. \ M_1 : r \to t \rrbracket \rho, d) 
+			\end{align*}
+			From the extensionality property it follows 
+				\begin{align*}
+					\mathcal{A} \llbracket H, x: s \vartriangleright \lambda y. \ M_1 : r \to t\rrbracket \rho^* = \mathcal{A}\llbracket H \vartriangleright [N / x] \lambda y. \ M_1 : r \to t \rrbracket \rho
+				\end{align*}
+	\end{itemize}
+\end{proof}
+
+\begin{lemma} [Soundness] 
 	For any theory $T$ and frame $\mathcal{A}$, if $\mathcal{A} \vDash T$ and $T \vdash (H \vartriangleright M = N : t)$, then $\mathcal{A} \vDash (H \vartriangleright M = N : t)$. 
 \end{lemma}
 
+\begin{proof}
+	The proof is done by induction on the height of the derivation $T \vdash (H \vartriangleright M = N : t)$. We prove that $\vDash$ is closed under the rules of Table 2.2 [Gun]. It's almost a direct consequence of the properties of $\vDash$ for the rules $\{Axiom\}$, $\{Permute\}$, $\{Refl\}$, $\{Sym\}$ and $\{Trans\}$. Thus we only prove closure for the remaining rules. 
+	\begin{itemize}
+		\item $\{Add\}$.  Suppose $\mathcal{A} \vDash (H \vartriangleright M = N :t)$ and $x \notin H$. Since every $H, x:s$-environment is also a $H$-environment we conclude that $\mathcal{A} \vDash (H, x: s \vartriangleright M = N : t)$. 
+		\item $\{Drop\}$. Suppose $\mathcal{A} \vDash (H, x: s \vartriangleright M = N : t)$ and $x \notin FV(M) \cup FV(N)$. Let $d \in \llbracket s \rrbracket$. For every $H$-environment $\rho$ 
+			\begin{align*}
+				\mathcal{A} \llbracket H \vartriangleright M : t \rrbracket \rho &= \mathcal \llbracket H, x:s \vartriangleright M : t \rrbracket \rho[x \mapsto d] \tag{Lemma \eqref{lemma:semantic-drop}} \\
+				&= \mathcal \llbracket H, x:s \vartriangleright N : t \rrbracket \rho[x \mapsto d] \\
+				&= \llbracket H \vartriangleright M : t \rrbracket \rho \tag{Lemma \eqref{lemma:semantic-drop}}
+			\end{align*}
+			
+		\item $\{Cong\}$. Suppose $\mathcal{A} \vDash (H \vartriangleright M_1 = M_2 : s \to t)$ and $\mathcal{A} \vDash (H \vartriangleright N_1 = N_2: s)$. Then, for every $H$-environment $\rho$ 
+		\begin{align*}
+			&\mathcal{A}\llbracket H \vartriangleright M_1(N_1) : t \rrbracket \rho\\
+			&= A^{s,t}(\mathcal{A} \llbracket H \vartriangleright M_1 : s \to t \rrbracket \rho, \mathcal{A} \llbracket H \vartriangleright N_1: s \rrbracket \rho) \\
+			&= A^{s,t}( \mathcal{A} \llbracket H \vartriangleright M_2 : s \to t \rrbracket \rho, \mathcal{A} \llbracket H \vartriangleright N_2: s \rrbracket \rho)\\
+			&= \mathcal{A}\llbracket H \vartriangleright M_2(N_2) : t \rrbracket \rho
+		\end{align*}
+		
+		\item $\{\xi \}$.  Suppose $\mathcal{A} \vDash (H, x :s \vartriangleright M = N : t)$. Then, for every $H$-environment $\rho$ and $d \in \llbracket s \rrbracket$ 
+			\begin{align*}
+				&A^{s,t}( \mathcal{A}\llbracket H \vartriangleright \lambda x:s . \ M : s \to t\rrbracket \rho, d) \\
+				&= \mathcal{A} \llbracket H, x:s \vartriangleright M : t \rrbracket \rho[x \mapsto d] \\
+				&=  \mathcal{A} \llbracket H, x:s \vartriangleright N : t \rrbracket \rho[x \mapsto d]\\
+				&=A^{s,t}( \mathcal{A}\llbracket H \vartriangleright \lambda x:s . \ M : s \to t\rrbracket \rho, d)
+			\end{align*}
+		Hence, by the extensionality property follows the desired result. 
+		
+		\item $\{\beta\}$. Suppose $H, x: s \vdash M : t$ and $H \vdash N : s$. Then, 
+			\begin{align*}
+				&\mathcal{A} \llbracket H \vartriangleright (\lambda x : s . \ M ) N : t \rrbracket \rho \\
+				&= A^{s, t}( \mathcal{A} \llbracket H \vartriangleright \lambda x : s . \ M: s \to t \rrbracket \rho, \mathcal{A} \llbracket H \vartriangleright N : s  \rrbracket \rho) \\
+				&= \mathcal{A}\llbracket H, x:s \vartriangleright M : t \rrbracket \rho[x \mapsto \mathcal{A} \llbracket H \vartriangleright N : s  \rrbracket \rho] \\
+				&= \mathcal{A} \llbracket H \vartriangleright [N / x] M : t \rrbracket \rho  \tag{Lemma \eqref{lemma:semantic-substitution}}
+			\end{align*}
+		
+		\item $\{\eta \}$. Suppose $H \vdash M : s \to t$ and $x \notin FV(M)$. Then, for every $H$-environment $\rho$ and $d \in \llbracket s \rrbracket$ 
+			\begin{align*}
+				&A^{s,t}(\mathcal{A}\llbracket H \vartriangleright \lambda x: s . \ M (x) \rrbracket \rho, d) \\
+				&= \mathcal{A}\llbracket H, x: s \vartriangleright M(x) : t \rrbracket \rho[x \mapsto d] \\
+				&= A^{s,t}(\mathcal{A}\llbracket H, x: s \vartriangleright M : s \to t \rrbracket \rho[x \mapsto d], \mathcal{A}\llbracket H, x: s \vartriangleright x : t \rrbracket \rho[x \mapsto d])\\
+				&=A^{s,t}(\mathcal{A}\llbracket H \vartriangleright M : s \to t \rrbracket \rho, d) \tag{Lemma \eqref{lemma:semantic-drop}}  
+			\end{align*}
+		By the extensionality property we get the desired result. 
+			
+				
+	\end{itemize}
+	
+\end{proof}
 
 
 
