@@ -1,0 +1,114 @@
+% !TEX root = main.tex 
+
+\section{Exercises}
+
+\begin{definition}
+	Let $\mathcal{A}$ and $\mathcal{B}$ be frames. A family of relations $R^s$ indexed over types $s$ is said to be a logical relation between $\mathcal{A}$ and $\mathcal{B}$ if 
+		\begin{itemize}
+			\item $R^s \subseteq \mathcal{A} \llbracket s \rrbracket \times \mathcal{B} \llbracket s \rrbracket$
+			\item $f R^{s \to t}$ iff $\forall x, y \ x R^s y \implies A^{s,t}(f,x) R^t B^{s,t}(g, y)$
+		\end{itemize}
+\end{definition}
+
+\begin{ex}{2.16}
+	The notion of a partial homomorphism is a special instance of a logical relation. Explain why this is the case and conjecture a version of Lemma 2.22 about partial homomorphisms that would apply to logical relations. Prove your version of the lemma. 
+\end{ex} 
+
+\begin{solution}
+
+
+\begin{definition}
+	We say that a binary relation $R \subseteq A \times B$ is \emph{surjective} if 
+		\begin{align*}
+			\forall b \in B  \ \exists a \in A \ aRb
+		\end{align*}
+\end{definition}
+
+\begin{definition}
+	We say that a binary relation $R \subseteq A \times B $ \emph{function-like} if 
+		\begin{align*}
+			\forall b \in B \ \forall a_1, a_2 \in A  \ a_1 R b \text{ and } a_1 R B \implies a_1 = a_2 
+		\end{align*}
+\end{definition}
+
+Observe that every partial homomorphism $\Upphi: \mathcal{A} \to \mathcal{B}$  induces a function-like surjective logical relation $R$ in the following way. For every $\Upphi^s$ define $R^s$ by 
+	\begin{align*}
+		x R^s y  \Leftrightarrow \Upphi^s(x) = y 
+	\end{align*}
+\end{solution}
+
+\begin{ex}{2.15}
+	Show that Theorem 2.25 fails when $X$ is not infinite
+\end{ex}
+
+\begin{solution}
+	For example, if $X$ is a singleton set, then for every $H$-enviroment $\rho$, where $H = x:o, y:o$, we have 
+		\begin{align*} 
+			\mathcal{F}_X \llbracket H \vartriangleright x:o \rrbracket \rho &= \rho (x) \\
+			&= \rho(y) \\
+			&= \mathcal{F}_X \llbracket H \vartriangleright y:o \rrbracket \rho 
+		\end{align*}
+	Thus, 
+		\begin{align*}
+			\mathcal{F}_X \vDash ( H \vartriangleright x = y : o )
+		\end{align*}
+	But as we saw in Theorem 2.13, the simply-type $\lambda$-calculus is non-trivial, therefore it is not the case that 
+		\begin{align*}
+			\vdash (H \vartriangleright x = y :o)
+		\end{align*}
+	
+	For the most general case in which $X$ is finite but not necessarily a singleton set, consider the following Church encoding of the natural numbers 
+	\begin{align*}
+		c_0 &= \lambda f : o \to o. \lambda x : o.  \ x \\
+		c_n &= \lambda f:o \to o. \lambda x:o. \  f(c_{n -1} f x), \ n \geq 1 
+	\end{align*}
+
+	Observe that if $X_1$ and $X_2$ are finite, then so it is $X_2^{X_1}$, the set of functions from $X_1$ to $X_2$. Thus, for every type $t$, $\mathcal{F}_X \llbracket t \rrbracket$ must be finite. 
+	
+	Observe also that since each $c_n$ is a closed term, the denotation on $\mathcal{F}_X$ will be independent of the environment, that is, for any two environments $\rho_1$ and $\rho_2$ 
+		\begin{align*}
+			\mathcal{F}_X \llbracket \vartriangleright c_n: t \rrbracket \rho_1 = \mathcal{F}_X \llbracket \vartriangleright c_n : t \rrbracket \rho_2 
+		\end{align*}
+		for each $n \in \mathbb{N}$, where $t = (( o \to o) \to o) \to o$. 
+	
+	Since we can choose finitely many elements out of $\mathcal{F}_X \llbracket t \rrbracket$, then it must be the case that for some $n, m \in \mathbb{N}$ with $n < m$ we have 
+		\begin{align*}
+			\mathcal{F}_X \vDash ( \vartriangleright c_n = c_n : t )
+		\end{align*}
+	
+	But clearly that fails to hold in every frame. For example, in $\mathcal{F}_\mathbb{N}$, if we let $s: \mathbb{N} \to \mathbb{N}$ be the successor function, then 
+		\begin{align*}
+			(\mathcal{F}_\mathbb{N} \llbracket \vartriangleright c_n : t \rrbracket \rho s) 0 &= n \\
+				& \neq m \\
+				& = (\mathcal{F}_\mathbb{N} \llbracket \vartriangleright c_m : t \rrbracket \rho s) 0
+		\end{align*}
+	Thus, 
+		\begin{align*}
+			\mathcal{F}_\mathbb{N} \nvDash ( \vartriangleright c_n = c_m : t )
+		\end{align*} 
+	and, consequently, the soundness result implies that 
+		\begin{align*}
+			\nvdash ( \vartriangleright c_n = c_m : t )
+		\end{align*}
+	Hence, Theorem 2.25 fails. 
+\end{solution}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

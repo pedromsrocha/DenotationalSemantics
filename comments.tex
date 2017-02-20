@@ -1,0 +1,129 @@
+% !TEX root = main.tex 
+
+\section{Comments}
+
+If we were asked if the $\lambda$ terms 
+	\begin{align*}
+		&\lambda f : o \to o . \lambda g : o \to o. \lambda x : o. \  f(g(x)) \text{ and }  \\
+		&\lambda f: o \to o. \lambda g: o \to o. \lambda x: o. \ g(f(x)) 
+	\end{align*}
+were equal, we would promplty answer \emph{no} since in general function composition is not commutative.  If we were asked to prove it by syntactical means only we would be with a lot of trouble. 
+
+One of the advantages of having denotational models of the lambda calculus lies precisely in the fact that we can easily answer questions like that once we have a model that matches our intuition on what a lambda term means. Another is the connection established between the denotational models and the operational meaning that somehow guarantees that the operation rules that we devised were not randomly chosen, that they make sense. 
+
+When we think of an intepretation of the simply typed $\lambda$-calculus we naturally interpret types as sets and terms of a given type as elements of the corresponding set.  The idea is formalized through the notion of a \emph{type frame}. 
+
+\begin{definition}
+	A \emph{pre-frame} is a pair of functions $(\mathcal{A}, A)$ where $\mathcal{A}$ acts on types and $A$ on pair of types for which the following holds 
+		\begin{itemize}
+			\item For every type $t$, $\mathcal{A} \llbracket t \rrbracket \neq \emptyset$ 
+			\item $A^{s,t} : \mathcal{A} \llbracket s \to t \rrbracket \times \mathcal{A} \llbracket s \rrbracket \to \mathcal{A} \llbracket t \rrbracket$ (intuitively gives an intepretation of function application) 
+			\item If $f, g \in \mathcal{A} \llbracket s \to t \rrbracket$ and $ A^{s,t}(f, x) = A^{s,t}(g,x)$, for every $x \in \mathcal{A}\llbracket s \rrbracket$, then $f = g$ (extensionality property) 
+		\end{itemize}
+\end{definition}
+
+We can then extend the function $\mathcal{A}$ to interpret terms. But we have to be careful since a term might not be closed and therefore its interpretation will depend on the type of its free variables. Thus, we will not interpret terms but typing derivations. For that, the notion of $H$-enviroment will play a key role. 
+
+\begin{definition}
+	Let $H$ be a type assignment and $(\mathcal{A}, A)$ a type frame. The function $\rho$ that acts on variables is said to be a \emph{$H$-environment} if for every $x:t \in H$ we have 
+		\begin{align*}
+			\rho(x) \in \mathcal{A} \llbracket t \rrbracket 
+		\end{align*}
+\end{definition}
+
+\begin{definition}
+	A \emph{type frame} (or \emph{frame}) is a pre-frame $(\mathcal{A}, A)$ in which we can extend $\mathcal{A}$ to act on triples $H \vartriangleright M : t$, where $H \vdash M : t$ and the following holds 
+	\begin{itemize}
+		\item[(F1)] $\mathcal{A}\llbracket H \vartriangleright x : t \rrbracket \rho  = \rho(x)$
+		\item[(F2)] $\mathcal{A} \llbracket H \vartriangleright M(N) \rrbracket \rho = A^{s,t}(\mathcal{A}\llbracket H \vartriangleright M : s \to t \rrbracket \rho, \mathcal{A} \llbracket H \vartriangleright N : s \rrbracket \rho)$, where $s$ is the unique type such that $H \vdash M : s \to t$ 
+		\item[(F3)] $A^{s,t}(\mathcal{A}\llbracket H \vartriangleright \lambda x : s. \ M : s \to t \rrbracket \rho, d) = \mathcal{A}\llbracket H, x : s \vartriangleright M : t \rrbracket \rho[x \mapsto d] $
+	\end{itemize}
+\end{definition}
+
+As it was proved in Lemma 2.14 [Gun], if a pre-frame has an extension to a frame, then that extension must be unique. However, not every pre-frame can be extended to a frame. For example, if we let 
+	\begin{align*}
+		\mathcal{A}\llbracket t \rrbracket = \mathbb{N}
+	\end{align*}
+for every type $t$ and define $A^{s,t}$ as being the natural numbers multiplication, that is 
+		\begin{align*}
+			A^{s,t}(m, n) = m * n 
+		\end{align*}
+then we may observe that $(\mathcal{A}, A)$ fulfils every condition to be considered a pre-frame. In particular, the extensionality property holds since if 
+	\begin{align*}
+		A^{s, t}(m, x) = A^{s,t}(m, x)
+	\end{align*}
+for every $x \in \mathbb{N}$, then $m * 1  = n * 1$ and consequently, $m = n$.  
+
+If now we assume that $(\mathcal{A}, A)$ is also a frame, then we get from condition (F3): 
+	\begin{align*}
+		(\mathcal{A}\llbracket y:o \vartriangleright \lambda x: o \to o . \ y \rrbracket \rho) * n &= \mathcal{A} \llbracket y:o, x:o \to o \vartriangleright y \rrbracket \rho[x \mapsto n] \\
+		&= \rho(y) 
+	\end{align*}
+which is  a contradiction since we may vary $n$ so as to get $\rho(y) = 2 * \rho(y)$, for example. 
+	
+\begin{definition}
+	Given a frame $\mathcal{A}$ and an equation $(H \vartriangleright M = N : t)$ (where $H \vDash M , N : t$) we define the satisfability relation $\vDash$ by 
+		\begin{align*}
+			\mathcal{A} \vDash (H \vartriangleright M = N :t ) \Leftrightarrow \mathcal{A} \llbracket H \vartriangleright M  : t\rrbracket = \mathcal{A} \llbracket H \vartriangleright N : t \rrbracket 
+		\end{align*}
+	We extend $\vDash$ to sets of equations by 
+		\begin{align*}
+			\mathcal{A} \vDash T
+		\end{align*}
+	if $\mathcal{A} \vDash x$ for every $x \in T$. 
+\end{definition} 
+
+The first correspondence between the denotational models of the simply typed $\lambda$-calculus and the operational meaning is established by the soundness Theorem 2.15 [Gun]. We present it here and give it a proof. But before we must prove some auxiliary results. 
+
+\begin{lemma}
+	Suppose $H \vdash M : t$, $x \notin H$ and $d \in \llbracket s \rrbracket$. Then, 
+		\begin{align*}
+			\mathcal{A} \llbracket H, x : s \vartriangleright M: t \rrbracket \rho [ x \mapsto d] = \mathcal{A} \llbracket H \vartriangleright M : t \rrbracket  \rho
+		\end{align*}
+	for every frame $\mathcal{A}$ and every $H$-environment $\rho$. 
+\end{lemma}
+
+\begin{proof}
+	The proof is done by induction on the height of the derivation tree of $ H \vdash M : t$. 
+	
+	If $H \vdash y : t$, then $y \neq x$ and 
+		\begin{align*}
+			\mathcal{A} \llbracket H, x : s \vartriangleright y:t \rrbracket \rho[ x \mapsto d] &= \rho(y) \\
+			&= \mathcal{A} \llbracket H \vartriangleright y: t \rrbracket \rho 
+		\end{align*}
+	
+	If $H \vdash M_1 M_2 : t$, then $H \vdash M_1 : r \to t$ and $H \vdash M_2 : r$ for some type $r$. Thus, 
+	\begin{align*}
+		&\mathcal{A} \llbracket H, x : s \vartriangleright M_1 M_2 : t \rrbracket \rho[x \mapsto d] \\
+		&= A^{r, t}( \mathcal{A} \llbracket H, x: s \vartriangleright M_1: r \to t \rrbracket \rho[ x \mapsto d], \mathcal{A} \llbracket H, x:s \vartriangleright M_2: r \rrbracket \rho[ x \mapsto d]) \\
+		&= A^{r, t}(\mathcal{A} \llbracket H \vartriangleright M_1 : r \to t \rrbracket \rho, \mathcal{A} \llbracket H \vartriangleright M_2 :  r \rrbracket \rho) \tag{induction} \\
+		&= \mathcal{A} \llbracket H \vartriangleright M_1 M_2 : t \rrbracket \rho 
+	\end{align*}
+	
+	If $H \vdash \lambda y : r. \ M : t$, we may assume that $y \neq x$. Then, for every $d_1 \in \llbracket r \rrbracket$, we have 
+	\begin{align*}
+		&A^{r, t}(\mathcal{A} \llbracket H \vartriangleright \lambda y : r \ M : t \rrbracket \rho, d_1) \\
+		&= \mathcal{A} \llbracket H, y:r \vartriangleright M: t \rrbracket \rho[y \mapsto d_1] \\
+		&= \mathcal{A} \llbracket H, y :r, x: s \vartriangleright M: t \rrbracket \rho[y \mapsto d_1 ] [ x \mapsto d] \tag{induction}\\
+		&= \mathcal{A} \llbracket H, x:s, y:r \vartriangleright M:t \rrbracket \rho [x \mapsto d] [y \mapsto d_1] \\
+		&= A^{r, t}(\mathcal{A} \llbracket H, x: s \vartriangleright \lambda y : r . \ M : r \to t \rrbracket \rho [x \mapsto d], d_1) 
+	\end{align*}
+	As the extensionality property holds we obtain the desired result. 
+\end{proof}
+
+
+\begin{lemma}
+	For any theory $T$ and frame $\mathcal{A}$, if $\mathcal{A} \vDash T$ and $T \vdash (H \vartriangleright M = N : t)$, then $\mathcal{A} \vDash (H \vartriangleright M = N : t)$. 
+\end{lemma}
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
